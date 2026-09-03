@@ -9,11 +9,12 @@ import os
 import sys
 import threading
 import time
-from argparse import ArgumentParser
 
 import girder_client
 import requests
+import typer
 from tqdm import tqdm
+from typing_extensions import Annotated
 
 
 def connect_client(
@@ -129,87 +130,80 @@ def create_sandbox_directory(
         print("-----------------------------------------")
 
 
-def run(args):
+def create_dsa_sandbox(
+    dsa_url: Annotated[
+        str,
+        typer.Argument(
+            help="The URL of the DSA instance you would like to grab an item from."
+        ),
+    ] = "",
+    item_id: Annotated[
+        str,
+        typer.Argument(
+            help="The Item ID for the item you would like to copy to your sandbox environment"
+        ),
+    ] = "",
+    output_path: Annotated[
+        str, typer.Argument(help="The path to store the downloaded files to.")
+    ] = "",
+    username: Annotated[
+        str,
+        typer.Argument(
+            help="The username used to authenticate and access protected items."
+        ),
+    ] = "",
+    password: Annotated[
+        str,
+        typer.Argument(
+            help="The password to use to authenticate and access protected items."
+        ),
+    ] = "",
+    download_slide: Annotated[
+        bool,
+        typer.Argument(
+            help="Whether or not to download the slide (the large image file) to your sandbox directory."
+        ),
+    ] = False,
+    download_annotations: Annotated[
+        bool,
+        typer.Argument(
+            help="Whether or not to download annotations to your sandbox directory."
+        ),
+    ] = False,
+    download_files: Annotated[
+        bool,
+        typer.Argument(
+            help="Whether or not to download files other then the slide (the large image file) to your sandbox directory."
+        ),
+    ] = False,
+):
 
-    dsa_url = args.dsa_url
     if not dsa_url.endswith("api/v1"):
         dsa_url += "/api/v1"
 
     options_dict = {
-        "download_slide": args.download_slide,
-        "download_annotations": args.download_annotations,
-        "download_files": args.download_files,
+        "download_slide": download_slide,
+        "download_annotations": download_annotations,
+        "download_files": download_files,
     }
 
-    gc = connect_client(dsa_url, args.username, args.password)
+    gc = connect_client(dsa_url, username, password)
 
     try:
-        _ = create_sandbox_directory(
-            gc, args.item_id, args.output_path, options=options_dict
-        )
+        _ = create_sandbox_directory(gc, item_id, output_path, options=options_dict)
 
     except (girder_client.HttpError, girder_client.AuthenticationError) as e:
         if isinstance(e, girder_client.AuthenticationError):
-            provided_username = args.username
-            if provided_username is None:
+            provided_username = username
+            if not provided_username:
                 provided_username = os.environ.get("DSA_USER", None)
             print(
                 f"Error signing in or accessing requested resources with username: {provided_username}"
             )
         else:
-            print(f"Error accessing resources at the provided URL: {args.dsa_url}")
+            print(f"Error accessing resources at the provided URL: {dsa_url}")
             print(e)
 
 
 if __name__ == "__main__":
-    args = ArgumentParser()
-    _ = args.add_argument(
-        "--dsa-url",
-        type=str,
-        help="The URL for the DSA instance you would like to connect to.",
-    )
-    _ = args.add_argument(
-        "--item-id",
-        type=str,
-        help="The Item ID for the item you would like to copy to your sandbox environment",
-    )
-
-    _ = args.add_argument(
-        "--output-path", type=str, help="The path to store the downloaded files to."
-    )
-
-    _ = args.add_argument(
-        "--dsa-user",
-        type=str,
-        default=None,
-        help="[Optional] The username to use to authenticate and access protected items.",
-    )
-
-    _ = args.add_argument(
-        "--dsa-password",
-        type=str,
-        default=None,
-        help="[Optional] The password to use to authenticate and access protected items.",
-    )
-
-    _ = args.add_argument(
-        "--download-slide",
-        type=bool,
-        default=False,
-        help="Whether or not to download the slide to your sandbox directory.",
-    )
-
-    _ = args.add_argument(
-        "--download-annotations",
-        type=bool,
-        default=False,
-        help="Whether or not to download annotations to your sandbox directory.",
-    )
-
-    _ = args.add_argument(
-        "--download-files",
-        type=bool,
-        default=False,
-        help="Whether or not to download files other than the slide to your sandbox directory.",
-    )
-    run(args.parse_args())
+    create_dsa_sandbox()

@@ -15,7 +15,7 @@ pip install create-dsa-sandbox
 Once installed, you can use the `create-dsa-sandbox` command to create local directories containing item data from a DSA instance. For example:
 
 ```bash
-create-dsa-sandbox --dsa-url="https://example.com/dsa" --item-id="" --output-dir="/path/to/output/directory"
+create-dsa-sandbox --dsa-url="https://example_dsa_url.com" --item-id="random-uuid-for-item" --output-dir="/path/to/output/directory"
 ```
 
 This command will create a local directory in the specified output directory named `/path/to/output/directory` containing item data from the DSA instance specified in the other arguments.
