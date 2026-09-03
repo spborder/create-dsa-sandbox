@@ -1,0 +1,19 @@
+[project]
+name = "create-dsa-sandbox"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "girder-client>=5.0.17",
+    "tqdm>=4.70.0",
+]
+
+[tool.pyright]
+reportUnannotatedClassAttribute = false
+reportMissingParameterType = false
+reportUnknownParameterType = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportAny = false
